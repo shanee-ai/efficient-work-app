@@ -1,18 +1,19 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-const EmailInput = z.object({
-  purpose: z.string().min(1),
-  recipient: z.string().default(""),
-  keyPoints: z.string().default(""),
-  tone: z.string().default("Professional"),
-  length: z.string().default("Medium"),
-  adjustment: z.string().optional(),
-  previous: z.string().optional(),
-});
-
 export const generateEmail = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => EmailInput.parse(input))
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        purpose: z.string().min(1),
+        recipient: z.string().default(""),
+        keyPoints: z.string().default(""),
+        tone: z.string().default("Professional"),
+        length: z.string().default("Medium"),
+        adjustment: z.string().optional(),
+        previous: z.string().optional(),
+      })
+      .parse(input))
   .handler(async ({ data }) => {
     const { streamText } = await import("ai");
     const { getGateway, MODEL } = await import("./ai-gateway.server");
@@ -37,14 +38,15 @@ Desired length: ${data.length}`;
     return { text: await result.text };
   });
 
-const MeetingInput = z.object({
-  title: z.string().default(""),
-  participants: z.string().default(""),
-  notes: z.string().min(1),
-});
-
 export const summarizeMeeting = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => MeetingInput.parse(input))
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        title: z.string().default(""),
+        participants: z.string().default(""),
+        notes: z.string().min(1),
+      })
+      .parse(input))
   .handler(async ({ data }) => {
     const { streamText } = await import("ai");
     const { getGateway, MODEL, extractJson } = await import("./ai-gateway.server");
@@ -66,20 +68,21 @@ export const summarizeMeeting = createServerFn({ method: "POST" })
     }>(await result.text);
   });
 
-const PlanInput = z.object({
-  tasks: z.array(
-    z.object({
-      name: z.string(),
-      description: z.string().default(""),
-      deadline: z.string().default(""),
-      priority: z.string().default("Medium"),
-      duration: z.string().default(""),
-    }),
-  ),
-});
-
 export const planDay = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => PlanInput.parse(input))
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        tasks: z.array(
+          z.object({
+            name: z.string(),
+            description: z.string().default(""),
+            deadline: z.string().default(""),
+            priority: z.string().default("Medium"),
+            duration: z.string().default(""),
+          }),
+        ),
+      })
+      .parse(input))
   .handler(async ({ data }) => {
     const { streamText } = await import("ai");
     const { getGateway, MODEL, extractJson } = await import("./ai-gateway.server");
